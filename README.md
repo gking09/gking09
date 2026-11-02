@@ -10,7 +10,7 @@
 <p align="center">
   <a href="https://kingsdevandai.com"><img src="https://img.shields.io/badge/website-kingsdevandai.com-F26B3F?style=for-the-badge&labelColor=141218" alt="Website: kingsdevandai.com" /></a>
   <a href="mailto:hello@kingsdevandai.com"><img src="https://img.shields.io/badge/email-say_hello-F26B3F?style=for-the-badge&labelColor=141218" alt="Email: hello@kingsdevandai.com" /></a>
-  <a href="https://github.com/gking09/Notchly"><img src="https://img.shields.io/badge/project-Notchly-F26B3F?style=for-the-badge&labelColor=141218&logo=swift&logoColor=F26B3F" alt="Project: Notchly" /></a>
+  <a href="https://www.linkedin.com/in/georgenking09/"><img src="https://img.shields.io/badge/linkedin-georgenking09-F26B3F?style=for-the-badge&labelColor=141218" alt="LinkedIn: georgenking09" /></a>
   <img src="https://komarev.com/ghpvc/?username=gking09&label=profile%20views&color=F26B3F&labelColor=141218&style=for-the-badge" alt="Profile views" />
 </p>
 
@@ -18,27 +18,15 @@
 
 ### <samp>01</samp>&nbsp; whoami
 
-<img src="./assets/terminal.svg" width="100%" alt="Terminal: whoami. George King, designing and building software at King’s Development and AI. Bespoke software, web apps, AI and automation for businesses across the UK. Stack: React, Next.js, TypeScript, C#/.NET, Python, Swift. Building Notchly. Say hello at hello@kingsdevandai.com." />
+<img src="./assets/terminal.svg" width="100%" alt="Terminal: whoami. George King, designing and building software at King’s Development and AI. Bespoke software, web apps, AI and automation for businesses across the UK. Stack: React, Next.js, TypeScript, C#/.NET, Python, Swift. Most of my projects are in private repos. Say hello at hello@kingsdevandai.com or on LinkedIn." />
 
-### <samp>02</samp>&nbsp; Featured project
-
-<a href="https://github.com/gking09/Notchly">
-  <img src="./assets/notchly.svg" width="100%" alt="Notchly: a quiet, glass-and-monochrome control surface for the MacBook notch, with now playing and synced lyrics, live activities, HUDs and a tray called the Stash. Built with SwiftUI and AppKit for macOS 14+." />
-</a>
-
-### <samp>03</samp>&nbsp; Toolkit
+### <samp>02</samp>&nbsp; Toolkit
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: light)" srcset="https://skillicons.dev/icons?i=react%2Cnextjs%2Cts%2Cvite%2Ctailwind%2Ccs%2Cdotnet%2Cpy%2Cfastapi%2Cnodejs%2Cpostgres%2Csupabase%2Csqlite%2Cswift%2Capple%2Cdocker%2Cnginx%2Cvercel%2Cnetlify%2Ccloudflare&perline=10&theme=light" />
     <img src="https://skillicons.dev/icons?i=react,nextjs,ts,vite,tailwind,cs,dotnet,py,fastapi,nodejs,postgres,supabase,sqlite,swift,apple,docker,nginx,vercel,netlify,cloudflare&perline=10&theme=dark" alt="React, Next.js, TypeScript, Vite, Tailwind, C#, .NET, Python, FastAPI, Node.js, PostgreSQL, Supabase, SQLite, Swift, macOS, Docker, nginx, Vercel, Netlify, Cloudflare" />
   </picture>
-</p>
-
-### <samp>04</samp>&nbsp; Activity
-
-<p align="center">
-  <img src="https://streak-stats.demolab.com?user=gking09&background=141218&border=F4F1EA1A&stroke=F4F1EA24&ring=F26B3F&fire=F2B23F&currStreakNum=F4F1EA&sideNums=F4F1EA&currStreakLabel=F26B3F&sideLabels=C4835F&dates=F4F1EA80&border_radius=22" alt="GitHub contribution streak" />
 </p>
 
 <picture>

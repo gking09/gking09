@@ -12,13 +12,11 @@ embedded in each SVG, because an SVG shown as an <img> can't load anything
 from the network.
 
 Animation is CSS where it can be, so prefers-reduced-motion switches it off,
-and SMIL for the few things CSS can't do in every browser (morphing the notch,
-sweeping a gradient).
+and SMIL for the one thing CSS can't do in every browser (sweeping a gradient).
 """
 import base64
 import html
 import io
-import math
 import random
 import re
 import urllib.request
@@ -43,7 +41,6 @@ FONTS = {
 # kingsdevandai.com, dark theme
 BG, FG = '#141218', '#F4F1EA'
 FLAME, EMBER, AMBER, DEEP, COPPER = '#F26B3F', '#FF7A4D', '#F2B23F', '#B33A16', '#C4835F'
-GREEN = '#30D158'  # battery only: Notchly keeps colour for things that mean something
 
 
 def fg(a):
@@ -73,25 +70,14 @@ TERMINAL = [
     ('out', [('clients:  ', KEY), ('businesses across the UK', VAL)]),
     ('out', [('stack:    ', KEY), ('[', PUNCT), ('react, next.js, typescript, c#/.net, python, swift', VAL),
              (']', PUNCT)]),
-    ('out', [('building: ', KEY), ('notchly', FLAME), (' — a glass control surface for the MacBook notch', VAL)]),
+    ('out', [('repos:    ', KEY), ('most of my projects are private', VAL), ('  # so this page is the tip of it', NOTE)]),
     ('out', [('belief:   ', KEY), ('"Understand the business first, then build the right solution."', AMBER)]),
     ('cmd', './say-hello.sh'),
     ('out', [('» ', FLAME), ('hello@kingsdevandai.com', FG), ('  ·  ', NOTE), ('kingsdevandai.com/contact', FG)]),
+    ('out', [('» ', FLAME), ('linkedin.com/in/georgenking09', FG)]),
     ('end',),
 ]
 TERMINAL_TITLE = 'george@kingsdevandai: ~ — zsh'
-
-NOTCHLY = {
-    'kicker': 'FEATURED PROJECT',
-    'name': 'Notchly',
-    'about': ('A quiet, glass-and-monochrome control surface for the MacBook notch: '
-              'now playing with synced lyrics, live activities, HUDs and a little tray called the Stash.'),
-    'tags': ['SwiftUI', 'AppKit', 'macOS 14+', 'GPL-3.0'],
-    'link': 'View on GitHub',
-    # what the notch shows in the animation
-    'track': ('Midnight Static', 'The Glass Arcade'),
-    'clock': '9:41', 'day': 'Monday · Focus', 'battery': '87%', 'timer': '04:59',
-}
 
 FOOTER = {
     'line': 'Thanks for stopping by.',
@@ -193,21 +179,6 @@ def rounded_rect_path(x, y, w, h, r):
     return (f'M{x + r} {y}H{x + w - r}A{r} {r} 0 0 1 {x + w} {y + r}V{y + h - r}'
             f'A{r} {r} 0 0 1 {x + w - r} {y + h}H{x + r}A{r} {r} 0 0 1 {x} {y + h - r}'
             f'V{y + r}A{r} {r} 0 0 1 {x + r} {y}Z')
-
-
-def smil(attr, keys, dur, spline='.45 0 .2 1', tag='animate', extra=''):
-    """A looping SMIL animation through (seconds, value) keys."""
-    times = [t / dur for t, _ in keys]
-    assert times[0] == 0 and abs(times[-1] - 1) < 1e-9, keys
-    return (f'<{tag} attributeName="{attr}" {extra} dur="{dur}s" repeatCount="indefinite" calcMode="spline" '
-            f'keyTimes="{";".join(f"{t:.4f}" for t in times)}" '
-            f'keySplines="{";".join([spline] * (len(keys) - 1))}" '
-            f'values="{";".join(str(v) for _, v in keys)}"/>')
-
-
-def shown(a, b, dur, fade=.25):
-    """Opacity 0 → 1 at a, back to 0 at b, once per loop."""
-    return smil('opacity', [(0, 0), (a, 0), (a + fade, 1), (b, 1), (b + fade, 0), (dur, 0)], dur)
 
 
 def kmark(cls, stroke, extra=''):
@@ -441,196 +412,8 @@ def terminal():
 @keyframes scan{{to{{transform:translateY({H + 140}px)}}}}
 '''
     write('terminal.svg', W, H, 'Terminal: whoami — George King, King’s Development and AI. '
-          'Bespoke software, web apps, AI and automation for businesses across the UK. hello@kingsdevandai.com',
+          'Bespoke software, web apps, AI and automation for businesses across the UK. hello@kingsdevandai.com, linkedin.com/in/georgenking09',
           body, css, fonts=('mono',))
-
-
-# ── NOTCHLY ───────────────────────────────────────────────────────────────
-
-def notchly():
-    W, H, T = 1000, 400, 14.0
-    c = NOTCHLY
-    SX, SY, SW, SH = 26, 26, 556, 348       # the screen inside the bezel
-    CX, MB = SX + SW / 2, 26                # notch centre, menu bar height
-    mid = SY + MB / 2
-
-    # (seconds, width, height, corner radius): idle → music → battery → open → idle.
-    # The extra keys either side of each state are the spring's overshoot.
-    shape = [(0, 128, 26, 10), (1.0, 128, 26, 10), (1.45, 334, 28, 13), (1.7, 320, 26, 12),
-             (4.3, 320, 26, 12), (4.65, 284, 26, 12), (4.85, 290, 26, 12), (6.9, 290, 26, 12),
-             (7.45, 452, 204, 34), (7.75, 440, 196, 32), (12.0, 440, 196, 32), (12.45, 122, 25, 10),
-             (12.7, 128, 26, 10), (T, 128, 26, 10)]
-    notch_anim = (smil('x', [(t, round(CX - w / 2, 1)) for t, w, h, r in shape], T)
-                  + smil('width', [(t, w) for t, w, h, r in shape], T)
-                  + smil('height', [(t, h + 20) for t, w, h, r in shape], T)
-                  + smil('rx', [(t, r) for t, w, h, r in shape], T))
-
-    # music: album art in the left wing, levels in the right
-    music = (f'<rect x="{CX - 160 + 12}" y="{mid - 9}" width="18" height="18" rx="5" fill="url(#art)"/>'
-             + ''.join(
-                 f'<rect x="{CX + 160 - 38 + 6 * i}" y="{mid - 3}" width="3" height="6" rx="1.5" fill="{fg(.9)}">'
-                 f'<animate attributeName="height" values="5;{hgt};7;{hgt - 3};5" dur="{d}s" repeatCount="indefinite"/>'
-                 f'<animate attributeName="y" values="{mid - 2.5};{mid - hgt / 2};{mid - 3.5};{mid - (hgt - 3) / 2};{mid - 2.5}" dur="{d}s" repeatCount="indefinite"/></rect>'
-                 for i, (hgt, d) in enumerate([(14, .9), (10, .7), (15, 1.1), (9, .8)])))
-
-    def battery(x, y, s=1.0, level=.87, anim=True):
-        fill_w = 20 * s * level
-        grow = (f'<animate attributeName="width" values="{fill_w - 3 * s:.1f};{fill_w:.1f};{fill_w:.1f}" '
-                f'keyTimes="0;.6;1" dur="2.4s" repeatCount="indefinite"/>' if anim else '')
-        return (f'<rect x="{x}" y="{y}" width="{24 * s:.1f}" height="{12 * s:.1f}" rx="{3.5 * s:.1f}" stroke="{fg(.75)}" stroke-width="1.2"/>'
-                f'<rect x="{x + 24 * s + 1.5:.1f}" y="{y + 4 * s:.1f}" width="1.8" height="{4 * s:.1f}" rx=".9" fill="{fg(.75)}"/>'
-                f'<rect x="{x + 2 * s:.1f}" y="{y + 2 * s:.1f}" width="{fill_w:.1f}" height="{8 * s:.1f}" rx="{2 * s:.1f}" fill="{GREEN}">{grow}</rect>')
-
-    bolt = 'M4.5 0L0 7.5h3.6L2.4 13 8 4.8H4.3L5.6 0z'
-    charging = (battery(CX - 145 + 14, mid - 6)
-                + f'<path d="{bolt}" transform="translate({CX - 145 + 46} {mid - 6.5})" fill="{FG}"/>'
-                + text(CX + 145 - 14, mid + 4.5, c['battery'], 12.5, FG, weight=600, anchor='end'))
-
-    # open: the Hub clock on the left, the player on the right
-    L, R, TOP = CX - 220, CX + 220, SY
-    rng = random.Random(4)
-    levels = [3 + 11 * abs(math.sin(i * .55)) * rng.uniform(.5, 1) for i in range(34)]
-    wave = ''.join(f'<rect x="{L + 216 + 6 * i}" y="{TOP + 120 - h / 2:.1f}" width="3" height="{h:.1f}" rx="1.5"/>'
-                   for i, h in enumerate(levels))
-    play_x = L + 216
-    timer_w = 16 + text_width(c['timer'], 11, 600) + 22
-    stash = 'Stash · 3'
-    stash_w = text_width(stash, 11, 600) + 22
-    ring = 2 * 3.14159 * 5.5
-    open_view = f'''
-<g>{shown(7.55, 11.75, T)}
-  {text(L + 24, TOP + 22, 'Home', 11, FG, weight=700)}
-  {text(L + 62, TOP + 22, 'Stash', 11, fg(.4), weight=500)}
-  {battery(R - 74, TOP + 12, s=.8, anim=False)}
-  {text(R - 22, TOP + 21.5, c['battery'], 10.5, fg(.85), weight=600, anchor='end')}
-</g>
-<g>{shown(7.7, 11.75, T)}
-  {text(L + 22, TOP + 96, c['clock'], 60, FG, weight=300, spacing=-1.5)}
-  {text(L + 25, TOP + 118, c['day'], 12, fg(.5), weight=500)}
-</g>
-<g>{shown(7.95, 11.75, T)}
-  <rect x="{L + 24}" y="{TOP + 136}" width="{timer_w:.1f}" height="24" rx="12" fill="{fg(.08)}" stroke="{fg(.12)}"/>
-  <circle cx="{L + 24 + 15}" cy="{TOP + 148}" r="5.5" stroke="{fg(.22)}" stroke-width="2"/>
-  <circle cx="{L + 24 + 15}" cy="{TOP + 148}" r="5.5" stroke="{AMBER}" stroke-width="2" stroke-dasharray="{ring:.2f}"
-    stroke-dashoffset="{ring * .3:.2f}" transform="rotate(-90 {L + 24 + 15} {TOP + 148})" stroke-linecap="round">
-    <animate attributeName="stroke-dashoffset" values="{ring * .25:.2f};{ring * .45:.2f}" dur="{T}s" repeatCount="indefinite"/></circle>
-  {text(L + 24 + 27, TOP + 152, c['timer'], 11, FG, weight=600)}
-  <rect x="{L + 32 + timer_w:.1f}" y="{TOP + 136}" width="{stash_w:.1f}" height="24" rx="12" fill="{fg(.08)}" stroke="{fg(.12)}"/>
-  {text(L + 32 + timer_w + 11, TOP + 152, stash, 11, fg(.85), weight=600)}
-</g>
-<g>{shown(7.85, 11.75, T)}
-  <rect x="{play_x}" y="{TOP + 42}" width="54" height="54" rx="12" fill="url(#art)"/>
-  <circle cx="{play_x + 27}" cy="{TOP + 69}" r="11" stroke="{fg(.5)}" stroke-width="1.5"/>
-  <circle cx="{play_x + 27}" cy="{TOP + 69}" r="3" fill="{fg(.6)}"/>
-  {text(play_x + 66, TOP + 64, c['track'][0], 13.5, FG, weight=600)}
-  {text(play_x + 66, TOP + 82, c['track'][1], 11.5, fg(.5), weight=500)}
-  <g fill="{fg(.22)}">{wave}</g>
-  <g fill="{fg(.92)}" clip-path="url(#played)">{wave}</g>
-  <g fill="{fg(.9)}" transform="translate({play_x + 50} {TOP + 154})">
-    <path d="M-30 -6v12l-8.5-6zM-21.5 -6v12L-30 0z"/>
-    <rect x="-5" y="-7" width="3.5" height="14" rx="1"/><rect x="1.5" y="-7" width="3.5" height="14" rx="1"/>
-    <path d="M30 -6v12l8.5-6zM21.5 -6v12L30 0z"/>
-  </g>
-  <rect x="{R - 76}" y="{TOP + 143}" width="54" height="22" rx="11" fill="{fg(.08)}" stroke="{fg(.12)}"/>
-  {text(R - 49, TOP + 158, 'Lyrics', 10.5, fg(.85), weight=600, anchor='middle')}
-</g>'''
-
-    # the pointer drifts up to the notch, which opens on hover
-    pointer_keys = [(0, '560 330'), (5.4, '560 330'), (6.6, f'{CX + 18} {SY + 10}'), (8.4, f'{CX + 22} {SY + 14}'),
-                    (9.3, f'{play_x + 52} {TOP + 158}'), (10.7, f'{play_x + 52} {TOP + 158}'), (11.6, '600 360'),
-                    (T, '600 360')]
-    pointer = f'''
-<g>{smil('opacity', [(0, 0), (5.3, 0), (5.6, 1), (11.2, 1), (11.5, 0), (T, 0)], T)}
-  {smil('transform', pointer_keys, T, tag='animateTransform', extra='type="translate"')}
-  <circle r="2" fill="none" stroke="{FG}" stroke-width="1.5" opacity="0">
-    {smil('r', [(0, 2), (9.45, 2), (9.9, 14), (T, 14)], T, spline='.2 .6 .4 1')}
-    {smil('opacity', [(0, 0), (9.45, 0), (9.5, .7), (9.9, 0), (T, 0)], T)}
-  </circle>
-  <path d="M0 0v17.5l4.7-4.4 3.2 7 3-1.3-3.1-6.9h6.4z" fill="#fff" stroke="#000" stroke-width="1.1" stroke-linejoin="round"/>
-</g>'''
-
-    # right-hand column
-    TX, TW = 630, 336
-    words, lines, line = c['about'].split(), [], ''
-    for word in words:
-        trial = f'{line} {word}'.strip()
-        if text_width(trial, 15.5, 400) > TW and line:
-            lines.append(line)
-            line = word
-        else:
-            line = trial
-    lines.append(line)
-    about = ''.join(text(TX, 156 + 24 * i, s, 15.5, fg(.66)) for i, s in enumerate(lines))
-    ty = 156 + 24 * len(lines) + 14
-    tags, x = [], TX
-    for tag in c['tags']:
-        tw = len(tag) * 11 * .6 + 22
-        tags.append(f'<rect x="{x:.1f}" y="{ty}" width="{tw:.1f}" height="26" rx="13" stroke="{fg(.18)}" fill="{fg(.03)}"/>'
-                    + text(x + tw / 2, ty + 17.5, tag, 11, fg(.78), cls='m', anchor='middle'))
-        x += tw + 8
-    link_w = text_width(c['link'], 15, 600)
-
-    body = f'''
-<defs>
-  <clipPath id="card"><rect width="{W}" height="{H}" rx="22"/></clipPath>
-  <clipPath id="scr"><rect x="{SX}" y="{SY}" width="{SW}" height="{SH}" rx="10"/></clipPath>
-  <clipPath id="played"><rect x="{play_x}" y="{TOP + 100}" width="80" height="40">
-    {smil('width', [(0, 70), (7.6, 70), (11.8, 128), (T, 128)], T, spline='0 0 1 1')}</rect></clipPath>
-  <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#1B1620"/><stop offset=".55" stop-color="#2A1714"/><stop offset="1" stop-color="#3A1A0E"/></linearGradient>
-  <radialGradient id="sun1"><stop offset="0" stop-color="{FLAME}" stop-opacity=".75"/><stop offset="1" stop-color="{FLAME}" stop-opacity="0"/></radialGradient>
-  <radialGradient id="sun2"><stop offset="0" stop-color="{AMBER}" stop-opacity=".45"/><stop offset="1" stop-color="{AMBER}" stop-opacity="0"/></radialGradient>
-  <radialGradient id="spill"><stop offset="0" stop-color="{FLAME}" stop-opacity=".22"/><stop offset="1" stop-color="{FLAME}" stop-opacity="0"/></radialGradient>
-  <linearGradient id="art" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="{AMBER}"/><stop offset=".55" stop-color="{FLAME}"/><stop offset="1" stop-color="#5B1F3A"/></linearGradient>
-  <linearGradient id="dune" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#0E0B10" stop-opacity=".55"/><stop offset="1" stop-color="#0E0B10" stop-opacity=".95"/></linearGradient>
-</defs>
-<g clip-path="url(#card)">
-  <rect width="{W}" height="{H}" fill="{BG}"/>
-  <ellipse cx="{CX}" cy="{H}" rx="380" ry="120" fill="url(#spill)"/>
-  <rect x="18" y="18" width="{SW + 16}" height="{SH + 16}" rx="18" fill="#060507" stroke="{fg(.1)}"/>
-  <g clip-path="url(#scr)">
-    <rect x="{SX}" y="{SY}" width="{SW}" height="{SH}" fill="url(#wall)"/>
-    <ellipse class="drift" cx="{SX + 130}" cy="{SY + SH - 20}" rx="300" ry="190" fill="url(#sun1)"/>
-    <ellipse class="drift d2" cx="{SX + SW - 60}" cy="{SY + SH - 70}" rx="230" ry="150" fill="url(#sun2)"/>
-    <path d="M{SX} {SY + 250}C{SX + 140} {SY + 205} {SX + 280} {SY + 300} {SX + SW} {SY + 230}V{SY + SH}H{SX}z" fill="url(#dune)"/>
-    <path d="M{SX} {SY + 300}C{SX + 180} {SY + 262} {SX + 360} {SY + 330} {SX + SW} {SY + 285}V{SY + SH}H{SX}z" fill="#0B090D" opacity=".85"/>
-    <rect x="{SX}" y="{SY}" width="{SW}" height="{MB}" fill="#000" opacity=".28"/>
-    {text(SX + 16, mid + 4, 'Notchly', 11, fg(.95), weight=700)}
-    {text(SX + 70, mid + 4, 'File', 11, fg(.85), weight=500)}
-    {text(SX + 100, mid + 4, 'Edit', 11, fg(.85), weight=500)}
-    {text(SX + 131, mid + 4, 'View', 11, fg(.85), weight=500)}
-    {text(SX + SW - 14, mid + 4, 'Mon ' + c['clock'], 11, fg(.95), weight=500, anchor='end')}
-    {battery(SX + SW - 88, mid - 5, s=.8, anim=False)}
-    <g transform="translate({SX + SW - 110} {mid + 4})" stroke="{fg(.9)}" stroke-width="1.5" stroke-linecap="round">
-      <path d="M-7 -6.5a10 10 0 0 1 14 0M-4.6 -3.8a6.4 6.4 0 0 1 9.2 0"/><circle r="1" fill="{fg(.9)}" stroke="none"/></g>
-    <rect x="{CX - 64}" y="{SY - 20}" width="128" height="46" rx="10" fill="#000">{notch_anim}</rect>
-    <g>{shown(1.6, 4.15, T)}{music}</g>
-    <g>{shown(4.8, 6.75, T)}{charging}</g>
-    {open_view}
-    {pointer}
-  </g>
-
-  {text(TX, 74, c['kicker'], 11.5, FLAME, cls='m', weight=600, spacing=2.8)}
-  {text(TX - 2, 122, c['name'], 46, FG, weight=800, spacing=-1.4)}
-  {about}
-  {''.join(tags)}
-  <g class="go">
-    {text(TX, ty + 66, c['link'], 15, FLAME, weight=600)}
-    <path d="M{TX + link_w + 9:.1f} {ty + 61}h14m-5-5 5 5-5 5" stroke="{FLAME}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="arrow"/>
-  </g>
-</g>
-<rect x=".5" y=".5" width="{W - 1}" height="{H - 1}" rx="21.5" stroke="{fg(.1)}"/>
-'''
-    css = '''
-.drift{transform-box:fill-box;transform-origin:center;animation:drift 18s ease-in-out infinite alternate}
-.d2{animation-duration:23s;animation-delay:-9s}
-@keyframes drift{to{transform:translate(40px,-18px) scale(1.12)}}
-.arrow{animation:nudge 1.8s ease-in-out infinite}
-@keyframes nudge{50%{transform:translateX(5px)}}
-'''
-    write('notchly.svg', W, H, 'Notchly: ' + c['about'], body, css, fonts=('sans', 'mono', 'mono-bold'))
 
 
 # ── DIVIDER ───────────────────────────────────────────────────────────────
@@ -725,6 +508,5 @@ if __name__ == '__main__':
     print('Building:')
     hero()
     terminal()
-    notchly()
     divider()
     footer()
